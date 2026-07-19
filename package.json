@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "fetch-v86": "bash scripts/fetch-v86-assets.sh"
+    "fetch-v86": "bash scripts/fetch-v86-assets.sh",
+    "build-bash-overlay": "bash scripts/build-bash-overlay.sh"
   },
   "dependencies": {
     "astro": "^7.1.1",

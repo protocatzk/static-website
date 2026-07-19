@@ -147,13 +147,22 @@ export const siteConfig = {
   /**
    * Echter Linux-Gast via v86 (lazy-load).
    * Assets unter public/v86/ — siehe scripts/fetch-v86-assets.sh
+   *
+   * Bash: Alpine i386 GNU bash als initrd-Overlay (cpio, unkomprimiert).
+   * BusyBox-ash bleibt /bin/sh; nach Boot optional `exec bash`.
    */
   linux: {
     enabled: true,
-    /** Gast-RAM in MiB (Power of two friendly; 32 reicht für Buildroot) */
-    memoryMb: 32,
+    /**
+     * Gast-RAM in MiB.
+     * v86 mappt die initrd ab Offset 64 MiB → memoryMb muss deutlich > 64 sein
+     * (128 empfohlen mit bash-overlay.cpio).
+     */
+    memoryMb: 128,
     cmdline:
       "console=ttyS0,115200 tsc=reliable mitigations=off random.trust_cpu=on",
+    /** Nach dem ash-Prompt automatisch in GNU bash wechseln */
+    autoBash: true,
     paths: {
       /** Prebuilt browser ESM (copied from node_modules/v86) */
       lib: "v86/libv86.mjs",
@@ -161,6 +170,8 @@ export const siteConfig = {
       bios: "v86/seabios.bin",
       vgaBios: "v86/vgabios.bin",
       bzImage: "v86/buildroot-bzimage.bin",
+      /** Uncompressed cpio overlay with /bin/bash + musl/readline/ncurses */
+      initrd: "v86/bash-overlay.cpio",
     },
   },
 

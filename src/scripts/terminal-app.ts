@@ -16,12 +16,14 @@ export type TerminalAppConfig = {
     enabled: boolean;
     memoryMb: number;
     cmdline: string;
+    autoBash: boolean;
     paths: {
       lib: string;
       wasm: string;
       bios: string;
       vgaBios: string;
       bzImage: string;
+      initrd?: string;
     };
   };
 };
@@ -101,8 +103,9 @@ export function initTerminalApp(
         }
         break;
       case "running":
-        statusEl.textContent =
-          "Buildroot Linux · serial ttyS0 · tippe hier · Esc-Menü: Portfolio-Tab";
+        statusEl.textContent = config.linux.autoBash
+          ? "Buildroot + GNU bash · serial ttyS0 · hier tippen"
+          : "Buildroot ash · tippe bash · serial ttyS0";
         if (progressEl) progressEl.hidden = true;
         break;
       case "stopped":
@@ -124,8 +127,10 @@ export function initTerminalApp(
       biosUrl: publicAsset(base, p.bios),
       vgaBiosUrl: publicAsset(base, p.vgaBios),
       bzImageUrl: publicAsset(base, p.bzImage),
+      initrdUrl: p.initrd ? publicAsset(base, p.initrd) : undefined,
       memoryMb: config.linux.memoryMb,
       cmdline: config.linux.cmdline,
+      autoBash: config.linux.autoBash,
     };
   }
 

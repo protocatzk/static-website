@@ -10,8 +10,12 @@ export type LinuxVmAssetConfig = {
   biosUrl: string;
   vgaBiosUrl: string;
   bzImageUrl: string;
+  /** Optional initrd (uncompressed cpio) — used for bash overlay */
+  initrdUrl?: string;
   memoryMb: number;
   cmdline: string;
+  /** When true, send `exec bash` after the buildroot ash prompt appears */
+  autoBash: boolean;
 };
 
 export type LinuxVmStatus =
@@ -79,6 +83,7 @@ export class LinuxVm {
   private outputListeners = new Set<OutputListener>();
   private buffer = "";
   private started = false;
+  private autoBashSent = false;
   private keyHandler: ((e: KeyboardEvent) => void) | null = null;
   private pasteHandler: ((e: ClipboardEvent) => void) | null = null;
   private focusEl: HTMLElement | null = null;
@@ -118,6 +123,19 @@ export class LinuxVm {
     for (const fn of this.outputListeners) fn(text);
   }
 
+  /** Buildroot default prompt is `~% ` (busybox ash). Switch to GNU bash once. */
+  private maybeAutoBash() {
+    if (!this.assets.autoBash || this.autoBashSent || !this.emulator) return;
+    if (!this.buffer.endsWith("~% ")) return;
+    this.autoBashSent = true;
+    // --norc/--noprofile: Alpine bashrc assumes a full Alpine userspace and can break Buildroot
+    window.setTimeout(() => {
+      this.emulator?.serial0_send(
+        "export TERM=linux; exec /bin/bash --norc --noprofile\n",
+      );
+    }, 80);
+  }
+
   /** Boot guest (idempotent if already running). Dynamically imports v86. */
   async boot(): Promise<void> {
     if (this.emulator) {
@@ -148,7 +166,7 @@ export class LinuxVm {
         percent: 5,
       });
 
-      const emulator = new V86({
+      const v86opts: Record<string, unknown> = {
         wasm_path: this.assets.wasmUrl,
         memory_size: this.assets.memoryMb * 1024 * 1024,
         vga_memory_size: 2 * 1024 * 1024,
@@ -161,7 +179,13 @@ export class LinuxVm {
         disable_mouse: true,
         disable_speaker: true,
         filesystem: {},
-      }) as unknown as V86Instance;
+      };
+      // Uncompressed cpio only (v86 does not gunzip initrd for us)
+      if (this.assets.initrdUrl) {
+        v86opts.initrd = { url: this.assets.initrdUrl };
+      }
+
+      const emulator = new V86(v86opts) as unknown as V86Instance;
 
       this.emulator = emulator;
 
@@ -217,6 +241,7 @@ export class LinuxVm {
         if (code === 0x0d) return;
         const char = String.fromCharCode(code);
         this.appendOutput(char);
+        this.maybeAutoBash();
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

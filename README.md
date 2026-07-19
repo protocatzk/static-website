@@ -43,9 +43,10 @@ Portfolio-Befehle: `help`, `about`, `skills`, `projects`, `social`, `contact`, `
 ### Echter Linux-Gast (v86)
 
 - Emulator: [v86](https://github.com/copy/v86) (x86 → WASM JIT)
-- Gast: offizielles **Buildroot bzImage** (BusyBox auf `ttyS0`)
-- Assets unter `public/v86/` (wasm, SeaBIOS, VGA-BIOS, Kernel)
-- Erneut laden: `yarn fetch-v86`
+- Gast: **Buildroot bzImage** + **GNU bash** (Alpine i386 Overlay-initrd)
+- Default-Shell nach Boot: `bash` (`autoBash: true`), darunter BusyBox `/bin/sh`
+- Assets: `public/v86/` (wasm, BIOS, Kernel, `bash-overlay.cpio`)
+- Neu bauen: `yarn fetch-v86` bzw. nur Overlay: `yarn build-bash-overlay`
 - Config: `siteConfig.linux` in `src/config/site.ts`
 
 Start über:

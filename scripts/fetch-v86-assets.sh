@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Download v86 BIOS, wasm and a minimal Buildroot Linux bzImage into public/v86/
+# Download v86 BIOS/wasm/kernel and build the bash overlay initrd.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -14,7 +14,7 @@ curl -fsSL --compressed -o "$OUT/seabios.bin" \
 curl -fsSL --compressed -o "$OUT/vgabios.bin" \
   "https://raw.githubusercontent.com/copy/v86/master/bios/vgabios.bin"
 
-# Official v86 test images CDN (Buildroot kernel with BusyBox initramfs)
+# Official v86 test image CDN (Buildroot kernel + BusyBox rootfs)
 curl -fL --compressed -o "$OUT/buildroot-bzimage.bin" \
   "https://i.copy.sh/buildroot-bzimage.bin"
 
@@ -26,6 +26,9 @@ else
   echo "node_modules/v86 missing — run: yarn add v86" >&2
   exit 1
 fi
+
+# GNU bash overlay (Alpine i386 packages → uncompressed cpio initrd)
+bash "$ROOT/scripts/build-bash-overlay.sh"
 
 ls -lah "$OUT"
 echo "OK — assets ready."
