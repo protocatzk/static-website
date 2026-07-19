@@ -10,6 +10,11 @@ interface Props {
 const { title = siteConfig.meta.title, description = siteConfig.meta.description } =
   Astro.props;
 
+/** Always ends with `/` so asset paths work with `base` (e.g. GitHub Pages). */
+const base = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+
 const t = siteConfig.theme;
 const wm = t.wm;
 
@@ -53,8 +58,8 @@ const themeVars = [
 <html lang={siteConfig.meta.lang} style={themeVars}>
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="icon" href={`${base}favicon.ico`} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />

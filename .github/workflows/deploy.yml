@@ -1,0 +1,46 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Deploy on every push to master
+  push:
+    branches: [master]
+  # Manual run from the Actions tab
+  workflow_dispatch:
+
+# Allow the job to clone the repo and create a Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deploy at a time
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install, build, and upload site
+        uses: withastro/action@v6
+        with:
+          # Match package.json engines (yarn.lock is auto-detected)
+          node-version: 22
+          # path: .
+          # package-manager: yarn@1.22.22
+          # build-cmd: yarn build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
