@@ -11,4 +11,10 @@ export default defineConfig({
     // Clean URLs friendly for static hosts
     format: 'directory',
   },
+  vite: {
+    // v86 ships prebuilt ESM + wasm; load on demand via dynamic import
+    optimizeDeps: {
+      exclude: ['v86'],
+    },
+  },
 });

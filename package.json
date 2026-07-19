@@ -9,9 +9,11 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "fetch-v86": "bash scripts/fetch-v86-assets.sh"
   },
   "dependencies": {
-    "astro": "^7.1.1"
+    "astro": "^7.1.1",
+    "v86": "^0.5.424"
   }
 }

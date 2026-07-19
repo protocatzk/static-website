@@ -75,6 +75,10 @@ export function initDesktop(
       if (action === "focus-terminal") {
         wm.open("term");
         syncTask();
+      } else if (action === "boot-linux") {
+        wm.open("term");
+        syncTask();
+        document.dispatchEvent(new CustomEvent("desktop:boot-linux"));
       }
     };
     icon.addEventListener("dblclick", open);
@@ -154,6 +158,10 @@ export function initDesktop(
       if (action === "open-term") {
         wm.open("term");
         syncTask();
+      } else if (action === "boot-linux") {
+        wm.open("term");
+        syncTask();
+        document.dispatchEvent(new CustomEvent("desktop:boot-linux"));
       } else if (action === "minimize-term") {
         wm.minimize("term");
         syncTask();

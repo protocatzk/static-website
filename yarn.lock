@@ -1903,6 +1903,11 @@ unstorage@^1.17.5:
     ofetch "^1.5.1"
     ufo "^1.6.3"
 
+v86@^0.5.424:
+  version "0.5.424"
+  resolved "https://registry.yarnpkg.com/v86/-/v86-0.5.424.tgz#d35e6fbc314cf43fa1734fb25fc0776303f50147"
+  integrity sha512-YEFGBGKVjipcUIQskAXzC9992guXg39r3Fst3rn/jNA9kiHnu5Q/dNQxXYPk6ZlWXcqxMNDaUkdEBsNY1AIYBg==
+
 vfile-location@^5.0.0:
   version "5.0.3"
   resolved "https://registry.yarnpkg.com/vfile-location/-/vfile-location-5.0.3.tgz#cb9eacd20f2b6426d19451e0eafa3d0a846225c3"

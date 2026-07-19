@@ -99,6 +99,7 @@ export function initTerminal(root: HTMLElement, config: ClientConfig): void {
       ["social", "Social Links"],
       ["contact", "Kontakt"],
       ["neofetch", "System-Info im ASCII-Style"],
+      ["linux / v86", "Echten Kernel booten (v86 + Buildroot)"],
       ["ls", "Dateien im Home-Verzeichnis"],
       ["cat <file>", "Datei ausgeben (about, skills, …)"],
       ["echo <text>", "Text ausgeben"],
@@ -316,6 +317,18 @@ export function initTerminal(root: HTMLElement, config: ClientConfig): void {
         return [...config.welcome];
       case "pwd":
         return [`/home/${username}`];
+      case "linux":
+      case "v86":
+      case "kernel":
+      case "boot":
+        // Handoff to dual-mode controller (lazy-loads real kernel)
+        root.dispatchEvent(new CustomEvent("term:linux"));
+        return [
+          {
+            html: `<span class="accent">booting real linux…</span> <span class="muted">(v86 + buildroot bzImage, lazy load)</span>`,
+          },
+          "Wechsle zur serial console — Tastatur-Input geht an den Gast.",
+        ];
       case "cd":
         return [
           {
@@ -423,6 +436,9 @@ export function initTerminal(root: HTMLElement, config: ClientConfig): void {
         "social",
         "contact",
         "neofetch",
+        "linux",
+        "v86",
+        "kernel",
         "ls",
         "cat",
         "echo",
@@ -448,8 +464,9 @@ export function initTerminal(root: HTMLElement, config: ClientConfig): void {
     }
   });
 
-  // Focus input when clicking the terminal
+  // Focus input when clicking the portfolio shell (not real-linux mode)
   root.addEventListener("click", () => {
+    if (root.dataset.mode === "linux") return;
     if (!busy) input.focus();
   });
 

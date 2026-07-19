@@ -64,6 +64,12 @@ export const siteConfig = {
         action: "focus-terminal" as const,
       },
       {
+        id: "linux",
+        label: "Linux",
+        glyph: "🐧",
+        action: "boot-linux" as const,
+      },
+      {
         id: "readme",
         label: "README",
         glyph: "📄",
@@ -133,17 +139,38 @@ export const siteConfig = {
   welcome: [
     "╔══════════════════════════════════════╗",
     "║   welcome to heliac@portfolio        ║",
-    "║   tippe 'help' · Fenster ziehbar     ║",
+    "║   help · linux (echter Kernel/v86)   ║",
     "╚══════════════════════════════════════╝",
     "",
   ],
 
+  /**
+   * Echter Linux-Gast via v86 (lazy-load).
+   * Assets unter public/v86/ — siehe scripts/fetch-v86-assets.sh
+   */
+  linux: {
+    enabled: true,
+    /** Gast-RAM in MiB (Power of two friendly; 32 reicht für Buildroot) */
+    memoryMb: 32,
+    cmdline:
+      "console=ttyS0,115200 tsc=reliable mitigations=off random.trust_cpu=on",
+    paths: {
+      /** Prebuilt browser ESM (copied from node_modules/v86) */
+      lib: "v86/libv86.mjs",
+      wasm: "v86/v86.wasm",
+      bios: "v86/seabios.bin",
+      vgaBios: "v86/vgabios.bin",
+      bzImage: "v86/buildroot-bzimage.bin",
+    },
+  },
+
   about: [
     "Hallo — ich bin Heliac.",
     "Ich baue schnelle, statische Websites und CLI-Tools.",
-    "Diese Seite ist ein reiner Astro-Static-Build im Linux-WM-Look.",
+    "Diese Seite ist ein Astro-Static-Build im Linux-WM-Look.",
+    "Optional: 'linux' bootet einen echten Buildroot-Kernel (v86).",
     "",
-    "Tipp: probiere 'neofetch', 'projects' oder 'cat about'.",
+    "Tipp: probiere 'neofetch', 'projects' oder 'linux'.",
   ],
 
   skills: [

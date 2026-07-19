@@ -4,57 +4,118 @@ import { siteConfig, getClientConfig } from "../config/site";
 const clientConfig = getClientConfig();
 const { username, hostname, path } = siteConfig.identity;
 const crt = siteConfig.theme.crtEffect;
+const linux = siteConfig.linux;
+
+const appConfig = {
+  shell: clientConfig,
+  linux: {
+    enabled: linux.enabled,
+    memoryMb: linux.memoryMb,
+    cmdline: linux.cmdline,
+    paths: linux.paths,
+  },
+};
 ---
 
 <div
   class:list={["term", { "term--crt": crt }]}
   aria-label="Interaktives Terminal"
   data-terminal
+  data-mode="portfolio"
 >
   <script
     type="application/json"
     id="terminal-config"
-    set:html={JSON.stringify(clientConfig)}
+    set:html={JSON.stringify(appConfig)}
   />
 
-  <div class="term-body" data-term-scroll>
-    <div
-      class="term-output"
-      data-term-output
-      role="log"
-      aria-live="polite"
-      aria-relevant="additions"
+  <div class="term-toolbar" role="tablist" aria-label="Terminal-Modus">
+    <button
+      type="button"
+      class="term-tab is-active"
+      role="tab"
+      data-mode-portfolio
+      aria-pressed="true"
+      title="Portfolio-Shell (JS)"
     >
-    </div>
+      portfolio
+    </button>
+    <button
+      type="button"
+      class="term-tab"
+      role="tab"
+      data-mode-linux
+      aria-pressed="false"
+      title="Echter Linux-Kernel via v86"
+      disabled={!linux.enabled}
+    >
+      linux <span class="term-tab-hint">v86</span>
+    </button>
+    <span class="term-toolbar-fill"></span>
+    <span class="term-toolbar-meta" data-linux-status>Kernel idle</span>
+  </div>
 
-    <form class="term-input-row" data-term-form autocomplete="off">
-      <label class="sr-only" for="term-input">Terminal-Befehl</label>
-      <span class="prompt" aria-hidden="true">
-        <span class="prompt-user">{username}</span><span class="prompt-at">@</span><span class="prompt-host">{hostname}</span><span class="prompt-colon">:</span><span class="prompt-path">{path}</span><span class="prompt-dollar">$</span>
-      </span>
-      <input
-        id="term-input"
-        class="term-input"
-        data-term-input
-        type="text"
-        spellcheck="false"
-        autocapitalize="off"
-        autocorrect="off"
-        enterkeyhint="send"
-        disabled
-      />
-    </form>
+  <!-- Portfolio shell (instant, config-driven) -->
+  <div class="term-pane" data-pane-portfolio>
+    <div class="term-body" data-term-scroll>
+      <div
+        class="term-output"
+        data-term-output
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions"
+      >
+      </div>
+
+      <form class="term-input-row" data-term-form autocomplete="off">
+        <label class="sr-only" for="term-input">Terminal-Befehl</label>
+        <span class="prompt" aria-hidden="true">
+          <span class="prompt-user">{username}</span><span class="prompt-at">@</span><span class="prompt-host">{hostname}</span><span class="prompt-colon">:</span><span class="prompt-path">{path}</span><span class="prompt-dollar">$</span>
+        </span>
+        <input
+          id="term-input"
+          class="term-input"
+          data-term-input
+          type="text"
+          spellcheck="false"
+          autocapitalize="off"
+          autocorrect="off"
+          enterkeyhint="send"
+          disabled
+        />
+      </form>
+    </div>
+  </div>
+
+  <!-- Real Linux (v86 serial console) — lazy-loaded -->
+  <div class="term-pane term-pane--linux" data-pane-linux hidden>
+    <div class="linux-bar">
+      <div class="linux-progress" data-linux-progress hidden aria-hidden="true"></div>
+      <div class="linux-actions">
+        <button type="button" class="linux-btn" data-linux-boot>Boot</button>
+        <button type="button" class="linux-btn" data-linux-reset title="VM neu starten">
+          Reset
+        </button>
+      </div>
+    </div>
+    <pre
+      class="linux-serial"
+      data-linux-serial
+      tabindex="0"
+      role="log"
+      aria-label="Linux serial console"
+      spellcheck="false"></pre>
   </div>
 </div>
 
 <script>
-  import { initTerminal } from "../scripts/terminal";
+  import { initTerminalApp } from "../scripts/terminal-app";
 
   const root = document.querySelector<HTMLElement>("[data-terminal]");
   const configEl = document.getElementById("terminal-config");
   if (root && configEl?.textContent) {
     const config = JSON.parse(configEl.textContent);
-    initTerminal(root, config);
+    initTerminalApp(root, config);
   }
 </script>
 
@@ -85,6 +146,78 @@ const crt = siteConfig.theme.crtEffect;
     opacity: 0.5;
   }
 
+  /* Toolbar tabs */
+  .term-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    padding: 3px 4px;
+    background: color-mix(in srgb, var(--surface) 70%, black);
+    border-bottom: 1px solid var(--border);
+    z-index: 3;
+    user-select: none;
+  }
+
+  .term-tab {
+    appearance: none;
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    background: var(--wm-button-bg, #2a322a);
+    color: var(--muted);
+    cursor: default;
+    box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .term-tab:hover:not(:disabled) {
+    color: var(--text);
+    background: var(--wm-button-hover, #3a4a3a);
+  }
+
+  .term-tab.is-active {
+    color: var(--accent);
+    border-color: var(--accent-dim);
+    background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  }
+
+  .term-tab:disabled {
+    opacity: 0.4;
+  }
+
+  .term-tab-hint {
+    font-weight: 400;
+    opacity: 0.7;
+    font-size: 0.65rem;
+  }
+
+  .term-toolbar-fill {
+    flex: 1;
+  }
+
+  .term-toolbar-meta {
+    font-size: 0.65rem;
+    color: var(--muted);
+    max-width: 45%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 4px;
+  }
+
+  .term-pane {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .term-pane[hidden] {
+    display: none !important;
+  }
+
   .term-body {
     flex: 1;
     min-height: 0;
@@ -94,10 +227,12 @@ const crt = siteConfig.theme.crtEffect;
     scrollbar-color: var(--accent-dim) transparent;
   }
 
-  .term-body::-webkit-scrollbar {
+  .term-body::-webkit-scrollbar,
+  .linux-serial::-webkit-scrollbar {
     width: 8px;
   }
-  .term-body::-webkit-scrollbar-thumb {
+  .term-body::-webkit-scrollbar-thumb,
+  .linux-serial::-webkit-scrollbar-thumb {
     background: var(--accent-dim);
     border-radius: 2px;
   }
@@ -150,7 +285,6 @@ const crt = siteConfig.theme.crtEffect;
     font-weight: 500;
   }
 
-  /* :global — auch für per JS eingefügte Prompt-Zeilen */
   .term :global(.prompt-user),
   .prompt-user {
     color: var(--prompt-user);
@@ -190,6 +324,85 @@ const crt = siteConfig.theme.crtEffect;
 
   .term-input:disabled {
     opacity: 0.5;
+  }
+
+  /* Linux serial pane */
+  .term-pane--linux {
+    position: relative;
+  }
+
+  .linux-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding: 3px 6px;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 80%, black);
+    z-index: 3;
+  }
+
+  .linux-progress {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border: 1px solid color-mix(in srgb, var(--border) 70%, black);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .linux-progress::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--p, 0%);
+    background: var(--accent-dim);
+  }
+
+  .linux-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  .linux-btn {
+    font: inherit;
+    font-size: 0.68rem;
+    padding: 1px 8px;
+    border: 1px solid var(--border);
+    background: var(--wm-button-bg, #2a322a);
+    color: var(--text);
+    cursor: default;
+  }
+
+  .linux-btn:hover:not(:disabled) {
+    background: var(--wm-button-hover, #3a4a3a);
+  }
+
+  .linux-btn:disabled {
+    opacity: 0.5;
+  }
+
+  .linux-serial {
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    padding: 0.65rem 0.75rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font: inherit;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    outline: none;
+    caret-color: var(--cursor);
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-dim) transparent;
+  }
+
+  .linux-serial:focus {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
   }
 
   .sr-only {
