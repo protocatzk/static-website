@@ -1,43 +1,72 @@
-# Astro Starter Kit: Minimal
+# Terminal Desktop (Astro)
+
+Statische Website als **Linux-Window-Manager-Desktop** mit interaktivem Terminal.
+Stil angelehnt an Openbox / IceWM / Fluxbox — nicht macOS oder Windows.
+
+Inhalt und Erscheinungsbild steuerst du über **eine** Config-Datei.
+
+## Quick start
 
 ```sh
-yarn create astro@latest -- --template minimal
+yarn install
+yarn dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Build & Preview:
 
-## 🚀 Project Structure
+```sh
+yarn build
+yarn preview
+```
 
-Inside of your Astro project, you'll see the following folders and files:
+## Desktop / Window Manager
+
+- Terminal-Fenster **ziehen** (Titelleiste), **resizen** (Ränder/Ecken)
+- **Minimieren / Maximieren / Schließen** (X11-Buttons rechts)
+- Doppelklick auf Titelleiste = Maximize
+- **Panel** unten: Menu, Task, Workspaces, Uhr
+- **Rechtsklick** auf den Desktop → Root-Menu
+- Desktop-Icons (Doppelklick öffnet Terminal)
+
+## Konfiguration
+
+Alles Wichtige liegt in:
 
 ```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+src/config/site.ts
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+| Bereich | Was |
+| --- | --- |
+| `meta` / `identity` | Titel, Prompt (`user@host`) |
+| `desktop` | WM-Name, Wallpaper, Panel, Fenstergröße, Icons |
+| `theme` + `theme.wm` | Terminal-Farben + Window-Chrome |
+| `about`, `skills`, `projects`, … | Shell-Inhalte |
+| `customCommands` | Eigene Befehle |
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Terminal-Befehle
 
-Any static assets, like images, can be placed in the `public/` directory.
+- `help`, `about`, `skills`, `projects`, `social`, `contact`
+- `neofetch`, `ls`, `cat`, `echo`, `date`, `history`, `banner`
+- `clear` / `Ctrl+L`, History `↑`/`↓`, Tab-Complete
 
-## 🧞 Commands
+## Projektstruktur
 
-All commands are run from the root of the project, from a terminal:
+```text
+src/
+├── config/site.ts
+├── components/
+│   ├── Desktop.astro      # Desktop + Panel + Menu
+│   ├── XWindow.astro      # X11-Fensterrahmen
+│   └── Terminal.astro
+├── scripts/
+│   ├── desktop.ts
+│   ├── wm.ts              # Drag / Resize / Focus
+│   └── terminal.ts
+├── layouts/BaseLayout.astro
+└── pages/index.astro
+```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `yarn install`             | Installs dependencies                            |
-| `yarn dev`             | Starts local dev server at `localhost:4321`      |
-| `yarn build`           | Build your production site to `./dist/`          |
-| `yarn preview`         | Preview your build locally, before deploying     |
-| `yarn astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `yarn astro -- --help` | Get help using the Astro CLI                     |
+## Deployment
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+`yarn build` → `dist/` (static). GitHub Pages, Netlify, Cloudflare Pages, Nginx, …

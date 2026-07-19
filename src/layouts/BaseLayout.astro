@@ -1,0 +1,73 @@
+---
+import { siteConfig } from "../config/site";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = siteConfig.meta.title, description = siteConfig.meta.description } =
+  Astro.props;
+
+const t = siteConfig.theme;
+const wm = t.wm;
+
+const themeVars = [
+  `--background: ${t.background}`,
+  `--surface: ${t.surface}`,
+  `--border: ${t.border}`,
+  `--text: ${t.text}`,
+  `--muted: ${t.muted}`,
+  `--accent: ${t.accent}`,
+  `--accent-dim: ${t.accentDim}`,
+  `--prompt-user: ${t.promptUser}`,
+  `--prompt-host: ${t.promptHost}`,
+  `--prompt-path: ${t.promptPath}`,
+  `--error: ${t.error}`,
+  `--link: ${t.link}`,
+  `--selection: ${t.selection}`,
+  `--cursor: ${t.cursor}`,
+  `--font-family: ${t.fontFamily}`,
+  `--font-size: ${t.fontSize}`,
+  /* Window manager chrome */
+  `--wm-title-active-bg: ${wm.titleActiveBg}`,
+  `--wm-title-active-fg: ${wm.titleActiveFg}`,
+  `--wm-title-inactive-bg: ${wm.titleInactiveBg}`,
+  `--wm-title-inactive-fg: ${wm.titleInactiveFg}`,
+  `--wm-frame-active: ${wm.frameActive}`,
+  `--wm-frame-inactive: ${wm.frameInactive}`,
+  `--wm-client-bg: ${wm.clientBg}`,
+  `--wm-panel-bg: ${wm.panelBg}`,
+  `--wm-panel-fg: ${wm.panelFg}`,
+  `--wm-panel-border: ${wm.panelBorder}`,
+  `--wm-panel-highlight: ${wm.panelHighlight}`,
+  `--wm-button-bg: ${wm.buttonBg}`,
+  `--wm-button-border: ${wm.buttonBorder}`,
+  `--wm-button-hover: ${wm.buttonHover}`,
+  `--wm-button-danger: ${wm.buttonDanger}`,
+].join("; ");
+---
+
+<!doctype html>
+<html lang={siteConfig.meta.lang} style={themeVars}>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content={t.background} />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

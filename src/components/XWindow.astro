@@ -1,0 +1,298 @@
+---
+/**
+ * X11 / Openbox-style window chrome (not macOS/Windows).
+ * Square titlebar buttons on the right, beveled frame, drag handle.
+ */
+interface Props {
+  id: string;
+  title: string;
+  appName?: string;
+}
+
+const { id, title, appName = "app" } = Astro.props;
+---
+
+<div
+  class="xwin is-focused"
+  data-window={id}
+  role="dialog"
+  aria-label={title}
+>
+  <header class="xwin-titlebar" data-drag-handle>
+    <span class="xwin-app-icon" aria-hidden="true" title={appName}>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <rect x="1" y="1" width="10" height="10" stroke="currentColor" stroke-width="1.2"></rect>
+        <path d="M3 8 L5 4 L7 7 L9 3" stroke="currentColor" stroke-width="1.2" fill="none"></path>
+      </svg>
+    </span>
+    <h2 class="xwin-title">{title}</h2>
+    <div class="xwin-controls">
+      <button
+        type="button"
+        class="xwin-btn"
+        data-win-min
+        title="Iconify"
+        aria-label="Minimieren"
+      >
+        <span aria-hidden="true">─</span>
+      </button>
+      <button
+        type="button"
+        class="xwin-btn"
+        data-win-max
+        title="Maximize"
+        aria-label="Maximieren"
+      >
+        <span aria-hidden="true">□</span>
+      </button>
+      <button
+        type="button"
+        class="xwin-btn xwin-btn--close"
+        data-win-close
+        title="Close"
+        aria-label="Schließen"
+      >
+        <span aria-hidden="true">×</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="xwin-client">
+    <slot />
+  </div>
+
+  <!-- Resize handles (X11-style edges/corners) -->
+  <div class="xwin-resize n" data-resize="n" aria-hidden="true"></div>
+  <div class="xwin-resize s" data-resize="s" aria-hidden="true"></div>
+  <div class="xwin-resize e" data-resize="e" aria-hidden="true"></div>
+  <div class="xwin-resize w" data-resize="w" aria-hidden="true"></div>
+  <div class="xwin-resize ne" data-resize="ne" aria-hidden="true"></div>
+  <div class="xwin-resize nw" data-resize="nw" aria-hidden="true"></div>
+  <div class="xwin-resize se" data-resize="se" aria-hidden="true"></div>
+  <div class="xwin-resize sw" data-resize="sw" aria-hidden="true"></div>
+</div>
+
+<style>
+  .xwin {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    min-height: 120px;
+    background: var(--wm-client-bg);
+    /* Classic raised/beveled outer frame */
+    border: 1px solid var(--wm-frame-inactive);
+    box-shadow:
+      inset 1px 1px 0 rgba(255, 255, 255, 0.06),
+      inset -1px -1px 0 rgba(0, 0, 0, 0.35),
+      2px 3px 0 rgba(0, 0, 0, 0.35);
+    z-index: 10;
+    overflow: hidden;
+  }
+
+  .xwin.is-focused {
+    border-color: var(--wm-frame-active);
+    box-shadow:
+      inset 1px 1px 0 rgba(255, 255, 255, 0.08),
+      inset -1px -1px 0 rgba(0, 0, 0, 0.4),
+      3px 4px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  .xwin.is-minimized,
+  .xwin.is-closed {
+    display: none;
+  }
+
+  .xwin.is-maximized {
+    box-shadow: none;
+    border-width: 0 0 1px 0;
+  }
+
+  .xwin.is-maximized .xwin-resize {
+    display: none;
+  }
+
+  .xwin.is-dragging,
+  .xwin.is-resizing {
+    user-select: none;
+  }
+
+  .xwin.is-dragging .xwin-client,
+  .xwin.is-resizing .xwin-client {
+    pointer-events: none;
+  }
+
+  .xwin-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 26px;
+    padding: 0 3px 0 6px;
+    flex-shrink: 0;
+    cursor: grab;
+    user-select: none;
+    background: var(--wm-title-inactive-bg);
+    color: var(--wm-title-inactive-fg);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .xwin.is-focused .xwin-titlebar {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--wm-title-active-bg) 82%, white) 0%,
+      var(--wm-title-active-bg) 45%,
+      color-mix(in srgb, var(--wm-title-active-bg) 78%, black) 100%
+    );
+    color: var(--wm-title-active-fg);
+  }
+
+  .xwin-titlebar:active {
+    cursor: grabbing;
+  }
+
+  .xwin-app-icon {
+    display: flex;
+    opacity: 0.85;
+    flex-shrink: 0;
+  }
+
+  .xwin-title {
+    flex: 1;
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1;
+  }
+
+  .xwin-controls {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .xwin-btn {
+    width: 20px;
+    height: 18px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font: inherit;
+    font-size: 0.85rem;
+    line-height: 1;
+    color: inherit;
+    cursor: pointer;
+    background: var(--wm-button-bg);
+    border: 1px solid var(--wm-button-border);
+    box-shadow:
+      inset 1px 1px 0 rgba(255, 255, 255, 0.12),
+      inset -1px -1px 0 rgba(0, 0, 0, 0.25);
+    border-radius: 0;
+  }
+
+  .xwin-btn:hover {
+    background: var(--wm-button-hover);
+  }
+
+  .xwin-btn:active {
+    box-shadow:
+      inset -1px -1px 0 rgba(255, 255, 255, 0.08),
+      inset 1px 1px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .xwin-btn--close:hover {
+    background: var(--wm-button-danger);
+    border-color: color-mix(in srgb, var(--wm-button-danger) 70%, white);
+  }
+
+  .xwin-client {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--wm-client-bg);
+    overflow: hidden;
+  }
+
+  /* Resize hit areas */
+  .xwin-resize {
+    position: absolute;
+    z-index: 5;
+  }
+
+  .xwin-resize.n {
+    top: 0;
+    left: 8px;
+    right: 8px;
+    height: 4px;
+    cursor: ns-resize;
+  }
+  .xwin-resize.s {
+    bottom: 0;
+    left: 8px;
+    right: 8px;
+    height: 5px;
+    cursor: ns-resize;
+  }
+  .xwin-resize.e {
+    top: 8px;
+    right: 0;
+    bottom: 8px;
+    width: 5px;
+    cursor: ew-resize;
+  }
+  .xwin-resize.w {
+    top: 8px;
+    left: 0;
+    bottom: 8px;
+    width: 5px;
+    cursor: ew-resize;
+  }
+  .xwin-resize.ne {
+    top: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    cursor: nesw-resize;
+  }
+  .xwin-resize.nw {
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    cursor: nwse-resize;
+  }
+  .xwin-resize.se {
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    cursor: nwse-resize;
+  }
+  .xwin-resize.sw {
+    bottom: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    cursor: nesw-resize;
+  }
+
+  @media (max-width: 640px) {
+    .xwin-resize {
+      /* Larger touch targets on small screens */
+    }
+    .xwin-resize.e,
+    .xwin-resize.w {
+      width: 10px;
+    }
+    .xwin-resize.n,
+    .xwin-resize.s {
+      height: 10px;
+    }
+  }
+</style>
